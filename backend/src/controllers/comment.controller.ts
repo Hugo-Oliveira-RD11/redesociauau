@@ -2,7 +2,8 @@ import { Request, Response } from 'express';
 import {
   createComment,
   getPostComments,
-  reactToComment
+  reactToComment,
+  updateComment
 } from '../services/comment.service';
 
 export const create = async (req: Request, res: Response) => {
@@ -51,5 +52,25 @@ export const react = async (req: Request, res: Response) => {
   } catch (error) {
     const err = error as Error;
     res.status(500).json({ error: err.message });
+  }
+};
+
+export const update = async (req: Request, res: Response) => {
+  try {
+    const { content } = req.body;
+    const comment = await updateComment(
+      req.user.id_usuario,
+      parseInt(req.params.commentId),
+      content
+    );
+    res.json(comment);
+  } catch (error) {
+    const err = error as Error;
+    // Diferenciamos os códigos de status conforme o tipo de erro
+    if (err.message.includes('não encontrado') || err.message.includes('permissão')) {
+      res.status(403).json({ error: err.message });
+    } else {
+      res.status(500).json({ error: err.message });
+    }
   }
 };

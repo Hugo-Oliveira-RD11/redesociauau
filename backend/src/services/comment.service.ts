@@ -24,7 +24,6 @@ export const createComment = async (userId: number, postId: number, content: str
     }
   });
 
-  // Notificar o autor do post (se não for o próprio usuário)
   if (comment.postagem.postado_por !== userId) {
     await sendNotification(
       comment.postagem.postado_por,
@@ -41,7 +40,6 @@ export const updateComment = async (
   commentId: number,
   newContent: string
 ) => {
-  // Primeiro verifica se o comentário existe e pertence ao usuário
   const existingComment = await prisma.comentario.findUnique({
     where: { id_comentario: commentId },
     select: { id_usuario: true }
@@ -55,13 +53,12 @@ export const updateComment = async (
     throw new Error('Você não tem permissão para editar este comentário');
   }
 
-  // Atualiza o comentário
   return prisma.comentario.update({
     where: { id_comentario: commentId },
     data: {
       conteudo: newContent,
-      editado: true, // Adicione este campo ao seu modelo se quiser marcar como editado
-      data_edicao: new Date() // Adicione este campo para registrar quando foi editado
+      editado: true,
+      data_edicao: new Date()
     },
     include: {
       autor: {
