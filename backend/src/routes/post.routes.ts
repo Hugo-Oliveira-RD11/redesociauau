@@ -18,5 +18,6 @@ router.get('/', authenticate, list);
 router.get('/feed', authenticate, feed);
 router.post('/:postId/react', authenticate, react);
 router.delete('/:postId', authenticate, remove);
+router.put('/posts/:postId', authenticate, update);
 
 export default router;

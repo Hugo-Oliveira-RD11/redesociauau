@@ -107,3 +107,27 @@ export const remove = async (req: Request, res: Response) => {
     res.status(400).json({ error: err.message });
   }
 };
+
+export const update = async (req: Request, res: Response) => {
+  try {
+    const { content, type, groupId, media } = req.body;
+    const post = await updatePost(
+      req.user.id_usuario,
+      parseInt(req.params.postId),
+      {
+        conteudo: content,
+        tipo: type,
+        id_grupo: groupId ? parseInt(groupId) : null,
+        midia: media
+      }
+    );
+    res.json(post);
+  } catch (error) {
+    const err = error as Error;
+    if (err.message.includes('não encontrada') || err.message.includes('Não autorizado')) {
+      res.status(403).json({ error: err.message });
+    } else {
+      res.status(500).json({ error: err.message });
+    }
+  }
+};
