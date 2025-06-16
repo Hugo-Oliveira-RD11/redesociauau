@@ -13,16 +13,32 @@ export const createGroup = async (userId: number, name: string, description: str
           funcao: 'ADMIN'
         }
       }
+    },
+    include: {
+      membros: true
     }
   });
 };
 
-export const addGroupMember = async (groupId: number, userId: number, role: string) => {
+export const joinGroup = async (groupId: number, userId: number) => {
+  const existingMember = await prisma.membroGrupo.findUnique({
+    where: {
+      id_grupo_id_usuario: {
+        id_grupo: groupId,
+        id_usuario: userId
+      }
+    }
+  });
+
+  if (existingMember) {
+    throw new Error('Você já é membro deste grupo');
+  }
+
   const membership = await prisma.membroGrupo.create({
     data: {
       id_grupo: groupId,
       id_usuario: userId,
-      funcao: role
+      funcao: 'MEMBER'
     },
     include: {
       grupo: true,
@@ -30,17 +46,18 @@ export const addGroupMember = async (groupId: number, userId: number, role: stri
     }
   });
 
-  // Notificar o usuário
-  await sendNotification(
-    userId,
-    `Você foi adicionado ao grupo ${membership.grupo.nome}`,
-    { type: 'group_invite', groupId }
-  );
+  await notifyGroupAdmins(groupId, `${membership.usuario.nome_usuario} entrou no grupo`);
 
   return membership;
 };
 
-export const removeGroupMember = async (groupId: number, userId: number) => {
+export const removeGroupMember = async (adminId: number, groupId: number, userId: number) => {
+  await verifyAdminPermission(adminId, groupId);
+
+  if (adminId === userId) {
+    throw new Error('Transfira a administração antes de sair do grupo');
+  }
+
   return prisma.membroGrupo.delete({
     where: {
       id_grupo_id_usuario: {
@@ -50,6 +67,52 @@ export const removeGroupMember = async (groupId: number, userId: number) => {
     }
   });
 };
+
+export const deleteGroup = async (adminId: number, groupId: number) => {
+  const group = await prisma.grupo.findUnique({
+    where: { id_grupo: groupId },
+    select: { criado_por: true }
+  });
+
+  if (!group || group.criado_por !== adminId) {
+    throw new Error('Apenas o criador do grupo pode deletá-lo');
+  }
+
+  return prisma.grupo.delete({
+    where: { id_grupo: groupId }
+  });
+};
+
+const verifyAdminPermission = async (userId: number, groupId: number) => {
+  const membership = await prisma.membroGrupo.findUnique({
+    where: {
+      id_grupo_id_usuario: {
+        id_grupo: groupId,
+        id_usuario: userId
+      }
+    },
+    select: { funcao: true }
+  });
+
+  if (!membership || membership.funcao !== 'ADMIN') {
+    throw new Error('Apenas o administrador pode realizar esta ação');
+  }
+};
+
+const notifyGroupAdmins = async (groupId: number, message: string) => {
+  const admins = await prisma.membroGrupo.findMany({
+    where: {
+      id_grupo: groupId,
+      funcao: 'ADMIN'
+    },
+    select: { id_usuario: true }
+  });
+
+  await Promise.all(
+    admins.map(admin =>
+      sendNotification(admin.id_usuario, message, { type: 'group_update', groupId })
+  );
+);
 
 export const getGroupPosts = async (groupId: number, page: number, limit: number) => {
   const skip = (page - 1) * limit;
