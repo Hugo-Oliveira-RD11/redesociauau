@@ -7,7 +7,6 @@ export const register = async (req: Request, res: Response) => {
   try {
     const { email, nome, password, birthDate } = req.body;
 
-    // Verificar se usuário já existe
     const existingUser = await prisma.usuario.findFirst({
       where: { OR: [{ email }, { nome: nome }] },
     });
