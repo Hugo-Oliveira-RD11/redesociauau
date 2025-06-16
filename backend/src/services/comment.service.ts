@@ -36,6 +36,44 @@ export const createComment = async (userId: number, postId: number, content: str
   return comment;
 };
 
+export const updateComment = async (
+  userId: number,
+  commentId: number,
+  newContent: string
+) => {
+  // Primeiro verifica se o comentário existe e pertence ao usuário
+  const existingComment = await prisma.comentario.findUnique({
+    where: { id_comentario: commentId },
+    select: { id_usuario: true }
+  });
+
+  if (!existingComment) {
+    throw new Error('Comentário não encontrado');
+  }
+
+  if (existingComment.id_usuario !== userId) {
+    throw new Error('Você não tem permissão para editar este comentário');
+  }
+
+  // Atualiza o comentário
+  return prisma.comentario.update({
+    where: { id_comentario: commentId },
+    data: {
+      conteudo: newContent,
+      editado: true, // Adicione este campo ao seu modelo se quiser marcar como editado
+      data_edicao: new Date() // Adicione este campo para registrar quando foi editado
+    },
+    include: {
+      autor: {
+        select: {
+          nome_usuario: true,
+          foto_perfil: true
+        }
+      }
+    }
+  });
+};
+
 export const getPostComments = async (postId: number, page: number, limit: number) => {
   const skip = (page - 1) * limit;
 
