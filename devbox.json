@@ -6,8 +6,13 @@
     "prisma-engines@latest",
     "postgresql@latest",
     "podman@latest",
-    "podman-compose@latest"
+    "podman-compose@latest",
+    "openssl@latest"
   ],
+  "env": {
+    "PRISMA_CLI_BINARY_TARGETS": "linux-musl",
+    "LD_LIBRARY_PATH": "${LD_LIBRARY_PATH}:/usr/lib/x86_64-linux-gnu"
+  },
   "shell": {
     "init_hook": [
       "echo 'Welcome to devbox!' > /dev/null"

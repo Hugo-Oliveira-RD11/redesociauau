@@ -12,12 +12,16 @@ import {
 
 const router = express.Router();
 
-router.post('/', authenticate, create);
-router.post('/:groupId/join', authenticate, join);
-router.delete('/:groupId', authenticate, deleteGroup);
-router.post('/:groupId/members', authenticate, addMember);
-router.delete('/:groupId/members/:userId', authenticate, removeMember);
-router.get('/:groupId/posts', authenticate, getPosts);
-router.get('/search', authenticate, search);
+const asyncHandler = (fn: express.RequestHandler) =>
+  (req: express.Request, res: express.Response, next: express.NextFunction) =>
+    Promise.resolve(fn(req, res, next)).catch(next);
+
+router.post('/', authenticate, asyncHandler(create));
+router.post('/:groupId/join', authenticate, asyncHandler(join));
+router.delete('/:groupId', authenticate, asyncHandler(deleteGroup));
+router.post('/:groupId/members', authenticate, asyncHandler(addMember));
+router.delete('/:groupId/members/:userId', authenticate, asyncHandler(removeMember));
+router.get('/:groupId/posts', authenticate, asyncHandler(getPosts));
+router.get('/search', authenticate, asyncHandler(search));
 
 export default router;

@@ -3,23 +3,16 @@ FROM node:24.1-alpine AS builder
 
 WORKDIR /app
 
-# Copia os arquivos de dependência
-COPY package.json package-lock.json ./
-# Etapa 1: Builder
-FROM node:24.1-alpine AS builder
-
-WORKDIR /app
-
-# Instala dependências de build
+# Instala dependências de build incluindo TypeScript
 RUN apk add --no-cache python3 make g++
 
 # Copia os arquivos de definição de dependências primeiro
-COPY package.json package-lock.json* ./
+COPY package.json package-lock.json ./
 
-# Instala dependências (incluindo devDependencies)
+# Instala todas as dependências (incluindo devDependencies como TypeScript)
 RUN npm ci
 
-# Copia o schema do Prisma
+# Copia os arquivos do Prisma
 COPY prisma ./prisma
 
 # Gera o Prisma Client
@@ -37,7 +30,7 @@ FROM node:24.1-alpine
 WORKDIR /app
 
 # Instala dependências de runtime (apenas produção)
-COPY package.json package-lock.json* ./
+COPY package.json package-lock.json ./
 RUN npm ci --only=production
 
 # Copia arquivos necessários do builder

@@ -109,10 +109,11 @@ const notifyGroupAdmins = async (groupId: number, message: string) => {
   });
 
   await Promise.all(
-    admins.map(admin =>
+    admins.map((admin: { id_usuario: number }) =>
       sendNotification(admin.id_usuario, message, { type: 'group_update', groupId })
+    )
   );
-);
+};
 
 export const getGroupPosts = async (groupId: number, page: number, limit: number) => {
   const skip = (page - 1) * limit;
@@ -154,4 +155,44 @@ export const searchGroups = async (query: string, page: number, limit: number) =
       }
     }
   });
+};
+
+export const addGroupMember = async (
+  requestingUserId: number,
+  groupId: number,
+  newUserId: number,
+  role: 'MEMBER' | 'ADMIN' = 'MEMBER'
+) => {
+  const requestingUserMembership = await prisma.membroGrupo.findFirst({
+    where: {
+      id_usuario: requestingUserId,
+      id_grupo: groupId,
+      funcao: 'ADMIN'
+    }
+  });
+
+  if (!requestingUserMembership) {
+    throw new Error('Apenas administradores podem adicionar membros ao grupo');
+  }
+  const existingMembership = await prisma.membroGrupo.findFirst({
+    where: {
+      id_usuario: newUserId,
+      id_grupo: groupId
+    }
+  });
+
+  if (existingMembership) {
+    throw new Error('O usuário já é membro deste grupo');
+  }
+
+  const newMembership = await prisma.membroGrupo.create({
+    data: {
+      id_usuario: newUserId,
+      id_grupo: groupId,
+      funcao: role,
+      data_ingresso: new Date()
+    }
+  });
+
+  return newMembership;
 };

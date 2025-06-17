@@ -3,6 +3,7 @@ import {
   createPost,
   getPosts,
   reactToPost,
+  updatePost,
   deletePost,
   getFeed
 } from '../services/post.service';
@@ -27,10 +28,11 @@ export const create = async (req: Request, res: Response) => {
   }
 };
 
-export const uploadImagePost = async (req: Request, res: Response) => {
+export const uploadImagePost = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: 'Nenhuma imagem enviada' });
+      res.status(400).json({ error: 'Nenhuma imagem enviada' });
+      return;
     }
 
     const imagePath = `/uploads/${req.file.filename}`;
@@ -39,12 +41,13 @@ export const uploadImagePost = async (req: Request, res: Response) => {
       conteudo: req.body.content || '',
       tipo: 'image',
       id_grupo: req.body.groupId ? parseInt(req.body.groupId) : null,
-      midia: req.file ? `/uploads/${req.file.filename}` : null
+      midia: imagePath
     });
 
     res.status(201).json(post);
   } catch (error) {
     const err = error as Error;
+    console.error('Upload error:', err);
     res.status(400).json({ error: err.message });
   }
 };

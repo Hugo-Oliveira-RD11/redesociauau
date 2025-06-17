@@ -2,12 +2,13 @@ import { Request, Response } from 'express';
 import {
   createGroup,
   joinGroup,
-  addGroupMember,
   removeGroupMember,
-  deleteGroup,
   getGroupPosts,
   searchGroups
 } from '../services/group.service';
+
+import { addGroupMember as serviceAddGroupMember } from '../services/group.service';
+import { deleteGroup as serviceDeleteGroup } from '../services/group.service';
 
 export const create = async (req: Request, res: Response) => {
   try {
@@ -36,7 +37,7 @@ export const join = async (req: Request, res: Response) => {
 export const addMember = async (req: Request, res: Response) => {
   try {
     const { userId, role = 'MEMBER' } = req.body;
-    const membership = await addGroupMember(
+    const membership = await serviceAddGroupMember(
       req.user.id_usuario,
       parseInt(req.params.groupId),
       parseInt(userId),
@@ -65,7 +66,7 @@ export const removeMember = async (req: Request, res: Response) => {
 
 export const deleteGroup = async (req: Request, res: Response) => {
   try {
-    await deleteGroup(
+    await serviceDeleteGroup(
       req.user.id_usuario,
       parseInt(req.params.groupId)
     );
@@ -91,22 +92,22 @@ export const getPosts = async (req: Request, res: Response) => {
   }
 };
 
-export const search = async (req: Request, res: Response) => {
+export const search = async (req: Request, res: Response): Promise<void> => {
   try {
     const { q, page = '1', limit = '10' } = req.query;
-
     if (!q || typeof q !== 'string') {
-      return res.status(400).json({ error: 'Parâmetro de busca inválido' });
+      res.status(400).json({ error: 'O parâmetro "q" é obrigatório' });
+      return;
     }
-
-    const groups = await searchGroups(
+    const result = await searchGroups(
       q,
-      parseInt(page as string),
-      parseInt(limit as string)
+      parseInt(page as string) || 1,
+      parseInt(limit as string) || 10
     );
-    res.json(groups);
+    res.json(result);
+
   } catch (error) {
-    const err = error as Error;
-    res.status(500).json({ error: err.message });
+    console.error('Search error:', error);
+    res.status(500).json({ error: 'Erro na busca' });
   }
 };

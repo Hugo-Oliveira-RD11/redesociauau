@@ -12,12 +12,13 @@ import {
 import { upload } from '../utils/fileUpload';
 import { sendNotification } from '../services/notification.service';
 
-export const getProfile = async (req: Request, res: Response) => {
+export const getProfile = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = await getUserById(parseInt(req.params.userId));
 
     if (!user) {
-      return res.status(404).json({ error: 'Usuário não encontrado' });
+      res.status(404).json({ error: 'Usuário não encontrado' });
+      return;
     }
 
     const [connections, groups] = await Promise.all([
@@ -33,9 +34,11 @@ export const getProfile = async (req: Request, res: Response) => {
     });
   } catch (error: unknown) {
     if (error instanceof Error) {
+      console.error('Profile fetch error:', error);
       res.status(500).json({ error: error.message });
     } else {
-      res.status(500).json({ error: 'An unknown error occurred' });
+      console.error('Unknown profile fetch error:', error);
+      res.status(500).json({ error: 'Erro desconhecido ao buscar perfil' });
     }
   }
 };
@@ -53,10 +56,11 @@ export const updateProfile = async (req: Request, res: Response) => {
   }
 };
 
-export const uploadProfilePicture = async (req: Request, res: Response) => {
+export const uploadProfilePicture = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: 'Nenhuma imagem enviada' });
+      res.status(400).json({ error: 'Nenhuma imagem enviada' });
+      return;
     }
 
     const imagePath = `/uploads/${req.file.filename}`;
@@ -65,9 +69,11 @@ export const uploadProfilePicture = async (req: Request, res: Response) => {
     res.json(updatedUser);
   } catch (error: unknown) {
     if (error instanceof Error) {
+      console.error('Profile picture upload error:', error);
       res.status(400).json({ error: error.message });
     } else {
-      res.status(400).json({ error: 'An unknown error occurred' });
+      console.error('Unknown error:', error);
+      res.status(500).json({ error: 'Erro desconhecido ao atualizar foto de perfil' });
     }
   }
 };

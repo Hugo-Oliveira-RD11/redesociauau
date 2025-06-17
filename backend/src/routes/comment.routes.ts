@@ -3,7 +3,8 @@ import { authenticate } from '../middleware/auth.middleware';
 import {
   create,
   list,
-  react
+  react,
+  update
 } from '../controllers/comment.controller';
 
 const router = express.Router();

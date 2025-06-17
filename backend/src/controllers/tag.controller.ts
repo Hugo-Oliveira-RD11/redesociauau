@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import {
   addUserTag,
   removeUserTag,
-  getUserTags as getUserTagsService,
+  getUserTags,
   searchByTags,
   getPopularTags
 } from '../services/tag.service';
@@ -28,9 +28,9 @@ export const removeTag = async (req: Request, res: Response) => {
   }
 };
 
-export const getUserTagsController = async (req: Request, res: Response) => {
+export const getUserTagController = async (req: Request, res: Response) => {
   try {
-    const tags = await getUserTagsService(parseInt(req.params.userId));
+    const tags = await getUserTags(parseInt(req.params.userId));
     res.json(tags);
   } catch (error) {
     const err = error as Error;
@@ -38,26 +38,27 @@ export const getUserTagsController = async (req: Request, res: Response) => {
   }
 };
 
-export const search = async (req: Request, res: Response) => {
-  try {
-    const { tags, page = '1', limit = '10' } = req.query;
-
-    if (!tags || typeof tags !== 'string') {
-      return res.status(400).json({ error: 'Parâmetro de tags inválido' });
-    }
-
-    const tagArray = tags.split(',');
-    const users = await searchByTags(
-      tagArray,
-      parseInt(page as string),
-      parseInt(limit as string)
-    );
-
-    res.json(users);
-  } catch (error) {
-    const err = error as Error;
-    res.status(500).json({ error: err.message });
+// tag.controller.ts
+export const search = async (req: Request, res: Response): Promise<void> => {
+  const { tags, page = '1', limit = '10' } = req.query;
+  if (!tags || typeof tags !== 'string') {
+    res.status(400).json({ error: 'Parâmetro de tags inválido' });
+    return;
   }
+  const tagArray = tags.split(',');
+  const pageNumber = parseInt(page as string) || 1;
+  const limitNumber = parseInt(limit as string) || 10;
+
+  const users = await searchByTags(tagArray, pageNumber, limitNumber);
+
+  res.json({
+    data: users,
+    pagination: {
+      page: pageNumber,
+      limit: limitNumber,
+      totalResults: users.length
+    }
+  });
 };
 
 export const popular = async (req: Request, res: Response) => {
