@@ -27,14 +27,14 @@ const Header = () => {
             />
             {/* <!-- Hamburger Toggle BTN --> */}
 
-            <Link className="block flex-shrink-0" href="/">
+            {/* <Link className="block flex-shrink-0" href="/">
               <Image
                 width={50}
                 height={50}
                 src={"/images/logo/logo-icon.png"}
                 alt="Logo"
               />
-            </Link>
+            </Link> */}
           </div>
         </div>
 

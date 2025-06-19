@@ -27,7 +27,7 @@ export const USUARIOS_API = {
     ];
   },
 
-  findById: async (id: number): Promise<any> => {
+  findById: async (id: string): Promise<any> => {
     return {
       id_usuario: id,
       email: "usuario@email.com",

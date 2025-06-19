@@ -6,17 +6,15 @@ import DefaultLaout from "../@components/Layouts/DefaultLaout";
 import useLocalStorage from "../../hooks/useLocalStorage";
 import React from "react";
 
-const PerfilPage = () => {
-  const [user] = useLocalStorage("user", null);
-
+const CadastroPage = () => {
   return (
     <DefaultLaout>
       <div className="mx-auto w-full max-w-[1080px]">
-        <Breadcrumb pageName="Meu Perfil" />
-        {/* <UserForm user={user} passwordBox /> */}
+        <Breadcrumb pageName="Cadastre-se" />
+        <UserForm />
       </div>
     </DefaultLaout>
   );
 };
 
-export default PerfilPage;
+export default CadastroPage;

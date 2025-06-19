@@ -15,7 +15,7 @@ import toast from "@/lib/toast";
 import { useApp } from "@/app/@context/AppContext";
 
 interface IFormInput {
-  email: string;
+  username: string;
   password: string;
 }
 
@@ -25,12 +25,12 @@ const SignIn: React.FC = () => {
     handleSubmit,
     formState: { isLoading },
   } = useForm<IFormInput>();
-  const { setUser } = useApp();
+  const { setUsuario } = useApp();
 
   const onSubmit: SubmitHandler<IFormInput> = async (data) => {
     try {
       const { ...user } = await AUTH_API.login(data);
-      setUser(user);
+      setUsuario(user);
     } catch (error: any) {
       if (error.status === 403)
         toast(ERROR_MSGS.LOGIN_FAILED, { type: "error" });
@@ -42,8 +42,8 @@ const SignIn: React.FC = () => {
   const validation: {
     [key in keyof IFormInput]: RegisterOptions<IFormInput, key>;
   } = {
-    email: {
-      required: validationMsgs.required("email"),
+    username: {
+      required: validationMsgs.required("username"),
     },
     password: {
       required: validationMsgs.required("password"),
@@ -60,14 +60,14 @@ const SignIn: React.FC = () => {
             <div className="w-full p-4 sm:p-12.5 xl:p-15">
               <form onSubmit={handleSubmit(onSubmit)}>
                 <InputDefault
-                  id="email"
+                  id="username"
                   type="text"
-                  label="Email"
-                  placeholder="Email"
+                  label="username"
+                  placeholder="username"
                   icon="mail"
                   iconRight={true}
                   className="mb-10"
-                  {...register("email", validation.email)}
+                  {...register("username", validation.username)}
                 />
 
                 <InputDefault

@@ -10,12 +10,12 @@ import Button from "../Buttons/Button";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import useLocalStorage from "@/hooks/useLocalStorage";
-import { IUser } from "@/types";
+import { Usuario } from "@/types";
 
 const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const router = useRouter();
-  const [user] = useLocalStorage<IUser>("user", null);
+  const [user] = useLocalStorage<Usuario>("user", null);
 
   const logout = async () => {
     try {
@@ -43,7 +43,7 @@ const DropdownUser = () => {
           <Image
             width={112}
             height={112}
-            src={user?.thumb ?? DEFAULT_THUMB_PATH}
+            src={user?.foto_perfil ?? DEFAULT_THUMB_PATH}
             style={{
               width: "auto",
               height: "auto",
@@ -54,7 +54,7 @@ const DropdownUser = () => {
         </span>
 
         <span className="flex items-center gap-2 font-medium text-dark dark:text-dark-6">
-          <span className="hidden lg:block">{user?.name}</span>
+          <span className="hidden lg:block">{user?.nome}</span>
 
           <svg
             className={`fill-current duration-200 ease-in ${dropdownOpen && "rotate-180"}`}
@@ -84,7 +84,7 @@ const DropdownUser = () => {
               <Image
                 width={112}
                 height={112}
-                src={user?.thumb ?? DEFAULT_THUMB_PATH}
+                src={user?.foto_perfil ?? DEFAULT_THUMB_PATH}
                 style={{
                   width: "auto",
                   height: "auto",
@@ -98,7 +98,7 @@ const DropdownUser = () => {
 
             <span className="block">
               <span className="block font-medium text-dark dark:text-white">
-                {user?.name}
+                {user?.nome}
               </span>
               <span className="block font-medium text-dark-5 dark:text-dark-6">
                 {user?.email}

@@ -1,37 +1,37 @@
-'use client'
+"use client";
 
-import { IUser } from "@/types";
+import { Usuario } from "@/types";
 import React, { useContext, useState, useEffect } from "react";
 
 interface Props {
-  user: IUser;
-  setUser: (user: IUser) => void;
+  user: Usuario;
+  setUsuario: (user: Usuario) => void;
 }
 
 const AppContext = React.createContext<Props>({
-  user: {} as IUser,
-  setUser: () => {},
+  user: {} as Usuario,
+  setUsuario: () => {},
 });
 
 export const AppProvider: React.FC<any> = ({ children }) => {
-  const [user, setUser] = useState<IUser>({} as IUser);
+  const [user, setUsuario] = useState<Usuario>({} as Usuario);
 
   // Effect to refresh token periodically
   useEffect(() => {
     const _user = localStorage.getItem("user");
     console.log(_user);
 
-    if (_user) setUser(JSON.parse(_user));
+    if (_user) setUsuario(JSON.parse(_user));
 
     // if (!window.location.href.includes("/login")) {
-    //   USERS_API.me().then((_user) => {
-    //     setUser(_user);
+    //   USUARIOS_API.me().then((_user) => {
+    //     setUsuario(_user);
     //   });
     // }
   }, []);
 
   return (
-    <AppContext.Provider value={{ user, setUser }}>
+    <AppContext.Provider value={{ user, setUsuario }}>
       {children}
     </AppContext.Provider>
   );

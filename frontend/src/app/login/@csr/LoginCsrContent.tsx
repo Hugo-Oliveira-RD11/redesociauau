@@ -5,7 +5,7 @@ import LoadingButton from "@/app/@components/Buttons/LoadingButton";
 import { PasswordInput } from "@/app/@components/Input";
 import InputDefault from "@/app/@components/Input/InputDefault";
 import { ERROR_MSGS } from "@/constants";
-import { EmailIcon, LockIcon } from "@/icons";
+import { UserIcon } from "@/icons";
 import toast from "@/lib/toast";
 import { validationMsgs } from "@/lib/validationMsgs";
 import { useRouter } from "next/navigation";
@@ -13,7 +13,7 @@ import React from "react";
 import { RegisterOptions, SubmitHandler, useForm } from "react-hook-form";
 
 interface IFormInput {
-  email: string;
+  username: string;
   password: string;
 }
 
@@ -46,8 +46,8 @@ const LoginCsrContent = () => {
   const validation: {
     [key in keyof IFormInput]: RegisterOptions<IFormInput, key>;
   } = {
-    email: {
-      required: validationMsgs.required("email"),
+    username: {
+      required: validationMsgs.required("username"),
     },
     password: {
       required: validationMsgs.required("password"),
@@ -56,14 +56,14 @@ const LoginCsrContent = () => {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <InputDefault
-        id="email"
+        id="username"
         type="text"
-        label="Email"
-        placeholder="Email"
-        icon={<EmailIcon />}
+        label="username"
+        placeholder="username"
+        icon={<UserIcon />}
         iconRight={true}
         className="mb-5"
-        {...register("email", validation.email)}
+        {...register("username", validation.username)}
       />
 
       <PasswordInput
