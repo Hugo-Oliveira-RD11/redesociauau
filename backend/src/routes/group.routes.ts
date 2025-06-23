@@ -1,32 +1,16 @@
-import express from "express";
-import { authenticate } from "../middleware/auth.middleware";
-import {
-  create,
-  join,
-  addMember,
-  removeMember,
-  deleteGroup,
-  getPosts,
-  search,
-} from "../controllers/group.controller";
+import express, { Request, Response, NextFunction } from 'express';
+import { authenticate } from '../middleware/auth.middleware';
+import * as groupController from '../controllers/group.controller';
 
 const router = express.Router();
 
-const asyncHandler =
-  (fn: express.RequestHandler) =>
-  (req: express.Request, res: express.Response, next: express.NextFunction) =>
-    Promise.resolve(fn(req, res, next)).catch(next);
+const wrap = (fn: any) => (req: Request, res: Response, next: NextFunction) =>
+  Promise.resolve(fn(req, res, next)).catch(next);
 
-router.post("/", authenticate, asyncHandler(create as any));
-router.post("/:groupId/join", authenticate, asyncHandler(join as any));
-router.delete("/:groupId", authenticate, asyncHandler(deleteGroup as any));
-router.post("/:groupId/members", authenticate, asyncHandler(addMember as any));
-router.delete(
-  "/:groupId/members/:userId",
-  authenticate,
-  asyncHandler(removeMember as any)
-);
-router.get("/:groupId/posts", authenticate, asyncHandler(getPosts as any));
-router.get("/search", authenticate, asyncHandler(search as any));
+router.post('/', authenticate, wrap(groupController.create));
+router.post('/:groupId/members', authenticate, wrap(groupController.addMember));
+router.delete('/:groupId/members/:userId', authenticate, wrap(groupController.removeMember));
+router.get('/:groupId/posts', authenticate, wrap(groupController.getPosts));
+router.get('/search', authenticate, wrap(groupController.search));
 
 export default router;

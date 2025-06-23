@@ -1,6 +1,7 @@
 import { prisma } from '../app';
 
 export const addUserTag = async (userId: number, tagName: string) => {
+  // Verificar se o usuário já tem 5 tags
   const tagCount = await prisma.usuarioTag.count({
     where: { id_usuario: userId }
   });
@@ -9,12 +10,14 @@ export const addUserTag = async (userId: number, tagName: string) => {
     throw new Error('Limite de tags atingido (máximo 5)');
   }
 
+  // Criar ou conectar a tag
   const tag = await prisma.tag.upsert({
     where: { nome: tagName },
     create: { nome: tagName },
     update: {}
   });
 
+  // Verificar se o usuário já tem essa tag
   const existingTag = await prisma.usuarioTag.findUnique({
     where: {
       id_usuario_id_tag: {
@@ -28,6 +31,7 @@ export const addUserTag = async (userId: number, tagName: string) => {
     throw new Error('Você já possui esta tag');
   }
 
+  // Adicionar tag ao usuário
   return prisma.usuarioTag.create({
     data: {
       id_usuario: userId,

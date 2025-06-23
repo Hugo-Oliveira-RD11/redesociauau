@@ -1,6 +1,7 @@
 import { prisma } from '../app';
 import { sendNotification } from './notification.service';
 
+// Função para buscar usuário por ID
 export const getUserById = async (userId: number) => {
   return await prisma.usuario.findUnique({
     where: { id_usuario: userId },
@@ -17,6 +18,7 @@ export const getUserById = async (userId: number) => {
   });
 };
 
+// Função para atualizar perfil do usuário
 export const updateUserProfile = async (userId: number, data: any) => {
   return await prisma.usuario.update({
     where: { id_usuario: userId },
@@ -29,7 +31,9 @@ export const updateUserProfile = async (userId: number, data: any) => {
   });
 };
 
+// Função para seguir um usuário
 export const followUser = async (followerId: number, followedId: number) => {
+  // Verifica se o usuário já está sendo seguido
   const existingFollow = await prisma.seguidor.findFirst({
     where: {
       id_seguidor: followerId,
@@ -49,6 +53,7 @@ export const followUser = async (followerId: number, followedId: number) => {
   });
 };
 
+// Função para deixar de seguir um usuário
 export const unfollowUser = async (followerId: number, followedId: number) => {
   const follow = await prisma.seguidor.findFirst({
     where: {
@@ -71,6 +76,7 @@ export const unfollowUser = async (followerId: number, followedId: number) => {
   });
 };
 
+// ... (o restante do seu arquivo existente continua abaixo)
 export const getUserConnections = async (userId: number) => {
   const [following, followers] = await Promise.all([
     prisma.seguidor.findMany({

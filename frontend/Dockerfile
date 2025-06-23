@@ -1,5 +1,5 @@
 # === Stage 1: Build ===
-FROM node:20.9.0-alpine AS builder
+FROM node:20.9.0 AS builder
 WORKDIR /app
 
 # Copia os arquivos de dependências e instala
@@ -11,7 +11,7 @@ COPY . .
 RUN npm run build
 
 # === Stage 2: Produção ===
-FROM node:20.9.0-alpine AS runner
+FROM node:20.9.0 AS runner
 WORKDIR /app
 
 # Define a variável de ambiente para produção

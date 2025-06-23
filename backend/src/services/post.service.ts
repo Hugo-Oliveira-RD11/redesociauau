@@ -12,7 +12,7 @@ export const createPost = async (postData: {
     data: {
       conteudo: postData.conteudo,
       postado_por: postData.postado_por,
-      tipo: postData.tipo || '',
+      tipo: postData.tipo || 'texto', // Valor padrão caso não seja fornecido
       id_grupo: postData.id_grupo || null,
       midia: postData.midia || null,
       upvote: 0,
@@ -93,6 +93,7 @@ export const reactToPost = async (userId: number, postId: number, reaction: 'upv
     }
   });
 
+  // Notificar o autor do post (se não for o próprio usuário)
   if (post.autor.id_usuario !== userId) {
     await sendNotification(
       post.autor.id_usuario,
@@ -122,6 +123,7 @@ export const deletePost = async (userId: number, postId: number) => {
   if (!post) throw new Error('Postagem não encontrada');
 
   const isAuthor = post.postado_por === userId;
+  // const isGroupAdmin = post.grupo?.membros.some(m => m.funcao === 'ADMIN');
     const isGroupAdmin = post.grupo?.membros.some((m: { funcao: string }) => m.funcao === 'ADMIN');
 
   if (!isAuthor && !isGroupAdmin) {
@@ -136,11 +138,13 @@ export const deletePost = async (userId: number, postId: number) => {
 export const getFeed = async (userId: number, page: number, limit: number) => {
   const skip = (page - 1) * limit;
 
+  // Obter IDs dos usuários que o usuário atual segue
   const following = await prisma.seguidor.findMany({
     where: { id_seguidor: userId },
     select: { id_seguido: true }
   });
 
+  // const followingIds = following.map(f => f.id_seguido);
   const followingIds = following.map((f: { id_seguido: number }) => f.id_seguido);
 
   return prisma.postagem.findMany({
@@ -162,67 +166,6 @@ export const getFeed = async (userId: number, page: number, limit: number) => {
       },
       _count: {
         select: { comentarios: true }
-      }
-    }
-  });
-};
-
-export const updatePost = async (
-  userId: number,
-  postId: number,
-  updateData: {
-    conteudo?: string;
-    tipo?: string;
-    id_grupo?: number | null;
-    midia?: string | null;
-  }
-) => {
-  // 1. Verificar se o post existe e se o usuário tem permissão
-  const existingPost = await prisma.postagem.findUnique({
-    where: { id_postagem: postId },
-    select: {
-      postado_por: true,
-      grupo: {
-        include: {
-          membros: {
-            where: { id_usuario: userId }
-          }
-        }
-      }
-    }
-  });
-
-  if (!existingPost) {
-    throw new Error('Postagem não encontrada');
-  }
-
-  // 2. Verificar permissões (autor ou admin do grupo)
-  const isAuthor = existingPost.postado_por === userId;
-  const isGroupAdmin = existingPost.grupo?.membros.some(
-    (m: { funcao: string }) => m.funcao === 'ADMIN'
-  );
-
-  if (!isAuthor && !isGroupAdmin) {
-    throw new Error('Não autorizado a editar esta postagem');
-  }
-
-  // 3. Atualizar o post
-  return await prisma.postagem.update({
-    where: { id_postagem: postId },
-    data: {
-      conteudo: updateData.conteudo,
-      tipo: updateData.tipo,
-      id_grupo: updateData.id_grupo,
-      midia: updateData.midia,
-      editado: true, // Marca que foi editado
-      data_edicao: new Date() // Registra quando foi editado
-    },
-    include: {
-      autor: {
-        select: {
-          nome_usuario: true,
-          foto_perfil: true
-        }
       }
     }
   });

@@ -13,32 +13,16 @@ export const createGroup = async (userId: number, name: string, description: str
           funcao: 'ADMIN'
         }
       }
-    },
-    include: {
-      membros: true
     }
   });
 };
 
-export const joinGroup = async (groupId: number, userId: number) => {
-  const existingMember = await prisma.membroGrupo.findUnique({
-    where: {
-      id_grupo_id_usuario: {
-        id_grupo: groupId,
-        id_usuario: userId
-      }
-    }
-  });
-
-  if (existingMember) {
-    throw new Error('Você já é membro deste grupo');
-  }
-
+export const addGroupMember = async (groupId: number, userId: number, role: string) => {
   const membership = await prisma.membroGrupo.create({
     data: {
       id_grupo: groupId,
       id_usuario: userId,
-      funcao: 'MEMBER'
+      funcao: role
     },
     include: {
       grupo: true,
@@ -46,18 +30,17 @@ export const joinGroup = async (groupId: number, userId: number) => {
     }
   });
 
-  await notifyGroupAdmins(groupId, `${membership.usuario.nome_usuario} entrou no grupo`);
+  // Notificar o usuário
+  await sendNotification(
+    userId,
+    `Você foi adicionado ao grupo ${membership.grupo.nome}`,
+    { type: 'group_invite', groupId }
+  );
 
   return membership;
 };
 
-export const removeGroupMember = async (adminId: number, groupId: number, userId: number) => {
-  await verifyAdminPermission(adminId, groupId);
-
-  if (adminId === userId) {
-    throw new Error('Transfira a administração antes de sair do grupo');
-  }
-
+export const removeGroupMember = async (groupId: number, userId: number) => {
   return prisma.membroGrupo.delete({
     where: {
       id_grupo_id_usuario: {
@@ -66,53 +49,6 @@ export const removeGroupMember = async (adminId: number, groupId: number, userId
       }
     }
   });
-};
-
-export const deleteGroup = async (adminId: number, groupId: number) => {
-  const group = await prisma.grupo.findUnique({
-    where: { id_grupo: groupId },
-    select: { criado_por: true }
-  });
-
-  if (!group || group.criado_por !== adminId) {
-    throw new Error('Apenas o criador do grupo pode deletá-lo');
-  }
-
-  return prisma.grupo.delete({
-    where: { id_grupo: groupId }
-  });
-};
-
-const verifyAdminPermission = async (userId: number, groupId: number) => {
-  const membership = await prisma.membroGrupo.findUnique({
-    where: {
-      id_grupo_id_usuario: {
-        id_grupo: groupId,
-        id_usuario: userId
-      }
-    },
-    select: { funcao: true }
-  });
-
-  if (!membership || membership.funcao !== 'ADMIN') {
-    throw new Error('Apenas o administrador pode realizar esta ação');
-  }
-};
-
-const notifyGroupAdmins = async (groupId: number, message: string) => {
-  const admins = await prisma.membroGrupo.findMany({
-    where: {
-      id_grupo: groupId,
-      funcao: 'ADMIN'
-    },
-    select: { id_usuario: true }
-  });
-
-  await Promise.all(
-    admins.map((admin: { id_usuario: number }) =>
-      sendNotification(admin.id_usuario, message, { type: 'group_update', groupId })
-    )
-  );
 };
 
 export const getGroupPosts = async (groupId: number, page: number, limit: number) => {
@@ -155,44 +91,4 @@ export const searchGroups = async (query: string, page: number, limit: number) =
       }
     }
   });
-};
-
-export const addGroupMember = async (
-  requestingUserId: number,
-  groupId: number,
-  newUserId: number,
-  role: 'MEMBER' | 'ADMIN' = 'MEMBER'
-) => {
-  const requestingUserMembership = await prisma.membroGrupo.findFirst({
-    where: {
-      id_usuario: requestingUserId,
-      id_grupo: groupId,
-      funcao: 'ADMIN'
-    }
-  });
-
-  if (!requestingUserMembership) {
-    throw new Error('Apenas administradores podem adicionar membros ao grupo');
-  }
-  const existingMembership = await prisma.membroGrupo.findFirst({
-    where: {
-      id_usuario: newUserId,
-      id_grupo: groupId
-    }
-  });
-
-  if (existingMembership) {
-    throw new Error('O usuário já é membro deste grupo');
-  }
-
-  const newMembership = await prisma.membroGrupo.create({
-    data: {
-      id_usuario: newUserId,
-      id_grupo: groupId,
-      funcao: role,
-      data_ingresso: new Date()
-    }
-  });
-
-  return newMembership;
 };

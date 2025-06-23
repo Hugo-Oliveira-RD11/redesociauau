@@ -7,7 +7,7 @@ dotenv.config({
 
 // Configurações básicas
 export const NODE_ENV = process.env.NODE_ENV || "development";
-export const PORT = parseInt(process.env.PORT || "5000", 10);
+export const PORT = parseInt(process.env.PORT || "3000", 10);
 export const JWT_SECRET =
   process.env.JWT_SECRET || "your-strong-secret-key-here";
 export const DATABASE_URL =

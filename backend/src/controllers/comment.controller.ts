@@ -1,13 +1,11 @@
-import { Request, Response } from "express";
+import { Request, Response } from 'express';
 import {
   createComment,
   getPostComments,
-  reactToComment,
-  updateComment,
-} from "../services/comment.service";
-import { IRequest } from "@/types";
+  reactToComment
+} from '../services/comment.service';
 
-export const create = async (req: IRequest, res: Response) => {
+export const create = async (req: Request, res: Response) => {
   try {
     const { content, parentId } = req.body;
     const comment = await createComment(
@@ -24,9 +22,9 @@ export const create = async (req: IRequest, res: Response) => {
   }
 };
 
-export const list = async (req: IRequest, res: Response) => {
+export const list = async (req: Request, res: Response) => {
   try {
-    const { page = "1", limit = "10" } = req.query;
+    const { page = '1', limit = '10' } = req.query;
     const comments = await getPostComments(
       parseInt(req.params.postId),
       parseInt(page as string),
@@ -40,7 +38,7 @@ export const list = async (req: IRequest, res: Response) => {
   }
 };
 
-export const react = async (req: IRequest, res: Response) => {
+export const react = async (req: Request, res: Response) => {
   try {
     const { reaction } = req.body;
     const comment = await reactToComment(
@@ -53,28 +51,5 @@ export const react = async (req: IRequest, res: Response) => {
   } catch (error) {
     const err = error as Error;
     res.status(500).json({ error: err.message });
-  }
-};
-
-export const update = async (req: IRequest, res: Response) => {
-  try {
-    const { content } = req.body;
-    const comment = await updateComment(
-      req.user.id_usuario,
-      parseInt(req.params.commentId),
-      content
-    );
-    res.json(comment);
-  } catch (error) {
-    const err = error as Error;
-    // Diferenciamos os códigos de status conforme o tipo de erro
-    if (
-      err.message.includes("não encontrado") ||
-      err.message.includes("permissão")
-    ) {
-      res.status(403).json({ error: err.message });
-    } else {
-      res.status(500).json({ error: err.message });
-    }
   }
 };

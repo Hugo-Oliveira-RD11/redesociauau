@@ -1,13 +1,12 @@
-import { Request, Response } from "express";
+import { Request, Response } from 'express';
 import {
   getUserNotifications,
-  markNotificationAsRead,
-} from "../services/notification.service";
-import { IRequest } from "@/types";
+  markNotificationAsRead
+} from '../services/notification.service';
 
-export const list = async (req: IRequest, res: Response) => {
+export const list = async (req: Request, res: Response) => {
   try {
-    const { limit = "20" } = req.query;
+    const { limit = '20' } = req.query;
     const notifications = await getUserNotifications(
       req.user.id_usuario,
       parseInt(limit as string)
@@ -20,7 +19,7 @@ export const list = async (req: IRequest, res: Response) => {
   }
 };
 
-export const markAsRead = async (req: IRequest, res: Response) => {
+export const markAsRead = async (req: Request, res: Response) => {
   try {
     await markNotificationAsRead(parseInt(req.params.notificationId));
     res.status(204).end();
