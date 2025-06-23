@@ -1,16 +1,17 @@
-import { Request, Response } from 'express';
+import { Request, Response } from "express";
 import {
   createGroup,
   joinGroup,
   removeGroupMember,
   getGroupPosts,
-  searchGroups
-} from '../services/group.service';
+  searchGroups,
+} from "../services/group.service";
 
-import { addGroupMember as serviceAddGroupMember } from '../services/group.service';
-import { deleteGroup as serviceDeleteGroup } from '../services/group.service';
+import { addGroupMember as serviceAddGroupMember } from "../services/group.service";
+import { deleteGroup as serviceDeleteGroup } from "../services/group.service";
+import { IRequest } from "@/types";
 
-export const create = async (req: Request, res: Response) => {
+export const create = async (req: IRequest, res: Response) => {
   try {
     const { name, description } = req.body;
     const group = await createGroup(req.user.id_usuario, name, description);
@@ -21,7 +22,7 @@ export const create = async (req: Request, res: Response) => {
   }
 };
 
-export const join = async (req: Request, res: Response) => {
+export const join = async (req: IRequest, res: Response) => {
   try {
     const membership = await joinGroup(
       parseInt(req.params.groupId),
@@ -34,9 +35,9 @@ export const join = async (req: Request, res: Response) => {
   }
 };
 
-export const addMember = async (req: Request, res: Response) => {
+export const addMember = async (req: IRequest, res: Response) => {
   try {
-    const { userId, role = 'MEMBER' } = req.body;
+    const { userId, role = "MEMBER" } = req.body;
     const membership = await serviceAddGroupMember(
       req.user.id_usuario,
       parseInt(req.params.groupId),
@@ -50,7 +51,7 @@ export const addMember = async (req: Request, res: Response) => {
   }
 };
 
-export const removeMember = async (req: Request, res: Response) => {
+export const removeMember = async (req: IRequest, res: Response) => {
   try {
     await removeGroupMember(
       req.user.id_usuario,
@@ -64,12 +65,9 @@ export const removeMember = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteGroup = async (req: Request, res: Response) => {
+export const deleteGroup = async (req: IRequest, res: Response) => {
   try {
-    await serviceDeleteGroup(
-      req.user.id_usuario,
-      parseInt(req.params.groupId)
-    );
+    await serviceDeleteGroup(req.user.id_usuario, parseInt(req.params.groupId));
     res.status(204).end();
   } catch (error) {
     const err = error as Error;
@@ -77,9 +75,9 @@ export const deleteGroup = async (req: Request, res: Response) => {
   }
 };
 
-export const getPosts = async (req: Request, res: Response) => {
+export const getPosts = async (req: IRequest, res: Response) => {
   try {
-    const { page = '1', limit = '10' } = req.query;
+    const { page = "1", limit = "10" } = req.query;
     const posts = await getGroupPosts(
       parseInt(req.params.groupId),
       parseInt(page as string),
@@ -92,10 +90,10 @@ export const getPosts = async (req: Request, res: Response) => {
   }
 };
 
-export const search = async (req: Request, res: Response): Promise<void> => {
+export const search = async (req: IRequest, res: Response): Promise<void> => {
   try {
-    const { q, page = '1', limit = '10' } = req.query;
-    if (!q || typeof q !== 'string') {
+    const { q, page = "1", limit = "10" } = req.query;
+    if (!q || typeof q !== "string") {
       res.status(400).json({ error: 'O parâmetro "q" é obrigatório' });
       return;
     }
@@ -105,9 +103,8 @@ export const search = async (req: Request, res: Response): Promise<void> => {
       parseInt(limit as string) || 10
     );
     res.json(result);
-
   } catch (error) {
-    console.error('Search error:', error);
-    res.status(500).json({ error: 'Erro na busca' });
+    console.error("Search error:", error);
+    res.status(500).json({ error: "Erro na busca" });
   }
 };

@@ -1,11 +1,12 @@
-import { Request, Response } from 'express';
+import { Request, Response } from "express";
 import {
   sendPrivateMessage,
   getConversation,
-  getUserConversations
-} from '../services/message.service';
+  getUserConversations,
+} from "../services/message.service";
+import { IRequest } from "@/types";
 
-export const send = async (req: Request, res: Response) => {
+export const send = async (req: IRequest, res: Response) => {
   try {
     const { content } = req.body;
     const message = await sendPrivateMessage(
@@ -21,9 +22,9 @@ export const send = async (req: Request, res: Response) => {
   }
 };
 
-export const conversation = async (req: Request, res: Response) => {
+export const conversation = async (req: IRequest, res: Response) => {
   try {
-    const { page = '1', limit = '20' } = req.query;
+    const { page = "1", limit = "20" } = req.query;
     const messages = await getConversation(
       req.user.id_usuario,
       parseInt(req.params.userId),
@@ -38,7 +39,7 @@ export const conversation = async (req: Request, res: Response) => {
   }
 };
 
-export const conversations = async (req: Request, res: Response) => {
+export const conversations = async (req: IRequest, res: Response) => {
   try {
     const conversations = await getUserConversations(req.user.id_usuario);
     res.json(conversations);

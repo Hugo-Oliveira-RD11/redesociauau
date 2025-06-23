@@ -1,9 +1,10 @@
-import { Request, Response } from "express";
 import { registerUser, loginUser } from "../services/auth.service";
 import { sendNotification } from "../services/notification.service";
 import { prisma } from "../app";
+import { IRequest } from "@/types";
+import { Response } from "express";
 
-export const register = async (req: Request, res: Response) => {
+export const register = async (req: IRequest, res: Response) => {
   try {
     const { email, nome, password, birthDate } = req.body;
 
@@ -27,7 +28,7 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: IRequest, res: Response) => {
   try {
     const { email, password } = req.body;
     const userData = await loginUser(email, password);
@@ -46,10 +47,10 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-export const me = async (req: Request, res: Response) => {
+export const me = async (req: IRequest, res: Response) => {
   try {
     const user = await prisma.usuario.findUnique({
-      where: { id_usuario: req.user.id_usuario },
+      where: { id_usuario: req.user?.id_usuario },
       select: {
         id_usuario: true,
         nome_usuario: true,

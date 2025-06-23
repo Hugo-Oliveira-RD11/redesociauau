@@ -3,7 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import { json, urlencoded } from "body-parser";
-import { PrismaClient } from "@prisma/client";
+// import { PrismaClient } from "@prisma/client";
 import { createServer } from "http";
 import { Server } from "socket.io";
 // Rotas
@@ -23,6 +23,7 @@ import { errorHandler } from "./middleware/error.middleware";
 // Configurações
 import { NODE_ENV, PORT, JWT_SECRET, DATABASE_URL } from "./config";
 import { initSocket } from "./services/notification.service";
+import { PrismaClient } from "@prisma/client/extension";
 
 // Inicialização do Express
 const app = express();
